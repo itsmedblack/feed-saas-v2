@@ -30,7 +30,12 @@ export async function scanShop(env: Env, shop: any) {
       ? "SELECT * FROM products WHERE shop_id=? AND missing_count < 2 AND availability='in_stock'"
       : 'SELECT * FROM products WHERE shop_id=? AND missing_count < 2';
     const rows = await env.DB.prepare(feedSql).bind(shop.id).all();
-    const xml = generateGoogleXml(shop.name || new URL(shop.domain).host, rows.results || []);
+    const xml = generateGoogleXml({
+      shopName: shop.name || new URL(shop.domain).host,
+      storeName: shop.merchant_store_name || shop.name || new URL(shop.domain).host,
+      defaultBrand: shop.default_brand || null,
+      googleProductCategory: shop.google_product_category || null
+    }, rows.results || []);
     await env.FEEDS.put(`feed:${shop.feed_token}`, xml, { metadata: { generatedAt: new Date().toISOString(), count: rows.results?.length || 0 } });
     const finished = new Date().toISOString();
     await env.DB.prepare(`UPDATE shops SET platform=?, discovery_method=?, last_scan=? WHERE id=?`).bind(platform, discovery.method, finished, shop.id).run();

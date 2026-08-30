@@ -15,6 +15,9 @@ const statements = [
     feed_token TEXT NOT NULL UNIQUE,
     discovery_method TEXT,
     feed_in_stock_only INTEGER NOT NULL DEFAULT 1,
+    merchant_store_name TEXT,
+    default_brand TEXT,
+    google_product_category TEXT,
     created_at TEXT NOT NULL
   )`,
   `CREATE TABLE IF NOT EXISTS products (
@@ -74,6 +77,9 @@ export async function ensureSchema(env: Env): Promise<void> {
     }
     // Migração automática para instalações V3 existentes.
     try { await env.DB.prepare(`ALTER TABLE shops ADD COLUMN feed_in_stock_only INTEGER NOT NULL DEFAULT 1`).run(); } catch {}
+    try { await env.DB.prepare(`ALTER TABLE shops ADD COLUMN merchant_store_name TEXT`).run(); } catch {}
+    try { await env.DB.prepare(`ALTER TABLE shops ADD COLUMN default_brand TEXT`).run(); } catch {}
+    try { await env.DB.prepare(`ALTER TABLE shops ADD COLUMN google_product_category TEXT`).run(); } catch {}
     initialized = true;
   })();
 

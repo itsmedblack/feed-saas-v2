@@ -253,6 +253,9 @@ function setupShopSettings(){
   el('editShopName').value = currentShop.name || '';
   el('editShopUrl').value = currentShop.domain || '';
   el('feedInStockOnly').checked = Number(currentShop.feed_in_stock_only ?? 1) === 1;
+  el('merchantStoreName').value = currentShop.merchant_store_name || currentShop.name || '';
+  el('defaultBrand').value = currentShop.default_brand || '';
+  el('googleProductCategory').value = currentShop.google_product_category || '';
   el('editShopMsg').textContent = '';
 }
 
@@ -266,7 +269,10 @@ el('saveShop').addEventListener('click', async () => {
       body:JSON.stringify({
         name:el('editShopName').value,
         url:el('editShopUrl').value,
-        feedInStockOnly:el('feedInStockOnly').checked
+        feedInStockOnly:el('feedInStockOnly').checked,
+        merchantStoreName:el('merchantStoreName').value,
+        defaultBrand:el('defaultBrand').value,
+        googleProductCategory:el('googleProductCategory').value
       })
     });
     currentShop = data.shop;

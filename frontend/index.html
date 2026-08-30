@@ -135,6 +135,19 @@
         <input id="editShopName" placeholder="Nome da loja">
         <label>URL da loja</label>
         <input id="editShopUrl" placeholder="https://loja.com.br">
+        <div class="merchant-fields">
+          <h4>Google Merchant</h4>
+          <p class="muted small">Campos usados para enriquecer o XML e facilitar organização e filtros no Merchant/Google Ads.</p>
+          <label>Nome da loja no Merchant</label>
+          <input id="merchantStoreName" placeholder="Ex.: Minha Loja">
+          <small class="field-help">Também será enviado em custom_label_0 para permitir filtros por loja/origem.</small>
+          <label>Marca padrão dos produtos</label>
+          <input id="defaultBrand" placeholder="Ex.: Marca própria (opcional)">
+          <small class="field-help">Usada somente quando o produto não informar marca. Deixe vazio se não houver uma marca correta.</small>
+          <label>Categoria Google padrão</label>
+          <input id="googleProductCategory" placeholder="Ex.: 166 ou Apparel & Accessories">
+          <small class="field-help">Opcional. A categoria original da loja continua sendo enviada em product_type.</small>
+        </div>
         <label class="toggle-row"><input id="feedInStockOnly" type="checkbox"> <span>Incluir no XML apenas produtos disponíveis</span></label>
         <button id="saveShop">Salvar alterações</button>
         <p id="editShopMsg"></p>

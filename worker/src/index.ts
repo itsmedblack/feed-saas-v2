@@ -5,7 +5,7 @@ import { detectPlatform } from './services/platformDetector';
 import { scanShop } from './services/scanner';
 import { ensureSchema } from './services/schema';
 
-const VERSION = '0.3.1';
+const VERSION = '0.3.2';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -85,8 +85,11 @@ export default {
         }
         const platform = domain !== current.domain ? await detectPlatform(domain) : current.platform;
         const inStockOnly = body.feedInStockOnly === false ? 0 : 1;
-        await env.DB.prepare(`UPDATE shops SET name=?, domain=?, platform=?, feed_in_stock_only=? WHERE id=?`)
-          .bind(name, domain, platform, inStockOnly, shopDetail[1]).run();
+        const merchantStoreName = String(body.merchantStoreName ?? current.merchant_store_name ?? name).trim() || name;
+        const defaultBrand = String(body.defaultBrand ?? current.default_brand ?? '').trim() || null;
+        const googleProductCategory = String(body.googleProductCategory ?? current.google_product_category ?? '').trim() || null;
+        await env.DB.prepare(`UPDATE shops SET name=?, domain=?, platform=?, feed_in_stock_only=?, merchant_store_name=?, default_brand=?, google_product_category=? WHERE id=?`)
+          .bind(name, domain, platform, inStockOnly, merchantStoreName, defaultBrand, googleProductCategory, shopDetail[1]).run();
         const updated = await env.DB.prepare('SELECT * FROM shops WHERE id=?').bind(shopDetail[1]).first();
         return json({ok:true, shop:updated});
       }
@@ -140,7 +143,7 @@ export default {
           SUM(CASE WHEN price IS NULL THEN 1 ELSE 0 END) AS missing_price,
           SUM(CASE WHEN title IS NULL OR title='' THEN 1 ELSE 0 END) AS missing_title,
           SUM(CASE WHEN gtin IS NULL OR gtin='' THEN 1 ELSE 0 END) AS missing_gtin,
-          SUM(CASE WHEN brand IS NULL OR brand='' THEN 1 ELSE 0 END) AS missing_brand,
+          SUM(CASE WHEN (brand IS NULL OR brand='') AND NOT EXISTS (SELECT 1 FROM shops s WHERE s.id=products.shop_id AND s.default_brand IS NOT NULL AND s.default_brand!='') THEN 1 ELSE 0 END) AS missing_brand,
           SUM(CASE WHEN category IS NULL OR category='' THEN 1 ELSE 0 END) AS missing_category,
           SUM(CASE WHEN availability='out_of_stock' THEN 1 ELSE 0 END) AS out_of_stock
           FROM products WHERE shop_id=?`).bind(health[1]).first<any>();

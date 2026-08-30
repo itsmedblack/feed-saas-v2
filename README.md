@@ -1,4 +1,4 @@
-# Feed SaaS V3.1
+# Feed SaaS V3.2
 
 Atualização direta da V3. Acrescenta navegação para Painel, edição/exclusão de lojas e opção por loja para incluir no XML apenas produtos disponíveis. O padrão é **somente produtos disponíveis**.
 
@@ -32,3 +32,12 @@ Após o deploy, teste `/api/health`. O campo `version` deve retornar `0.3.0`.
 
 ### Netlify
 Aponte para o mesmo repositório/pasta `frontend`. O deploy automático atualizará a interface. A URL do backend já salva no navegador continua válida.
+
+
+## V3.2 — Google Merchant enriquecido
+- `g:brand` com a marca real do produto; opcionalmente usa uma marca padrão configurada pela loja quando o produto não informa marca.
+- `g:custom_label_0` recebe o nome configurado da loja/origem para facilitar segmentação e filtros.
+- `g:product_type` recebe a categoria original encontrada na loja.
+- `g:google_product_category` pode ser configurado como categoria padrão da loja.
+- `g:additional_image_link` é emitido quando houver imagens adicionais armazenadas.
+- Não inventa marca automaticamente: o fallback só é utilizado quando configurado pelo usuário.
