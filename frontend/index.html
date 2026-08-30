@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Feed SaaS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div>
+      <span class="eyebrow">PRODUCT FEED ENGINE</span>
+      <h1>Transforme qualquer loja em um feed XML.</h1>
+      <p>Informe o endereço do e-commerce. A plataforma detecta a tecnologia, encontra os produtos e gera um XML público para catálogos.</p>
+    </div>
+  </section>
+
+  <section class="card setup" id="setupCard">
+    <div>
+      <span class="eyebrow">CONFIGURAÇÃO INICIAL</span>
+      <h2>Conectar backend</h2>
+      <p class="muted">Cole abaixo a URL <strong>workers.dev</strong> exibida pela Cloudflare após o deploy.</p>
+    </div>
+    <div class="row">
+      <input id="backendUrl" placeholder="https://feed-saas-v2.seu-subdominio.workers.dev">
+      <button id="connectBackend" type="button">Testar e conectar</button>
+    </div>
+    <p id="backendMsg"></p>
+  </section>
+
+  <section class="connection" id="connectionBar" hidden>
+    <div><span class="dot"></span><strong>Backend conectado</strong> <span id="connectedUrl"></span></div>
+    <button class="linkbtn" id="changeBackend" type="button">Alterar</button>
+  </section>
+
+  <section class="card" id="appCard" hidden>
+    <form id="add">
+      <label>URL da loja</label>
+      <div class="row">
+        <input id="url" placeholder="https://loja.com.br" required>
+        <button>Analisar loja</button>
+      </div>
+      <p id="msg"></p>
+    </form>
+  </section>
+
+  <section id="shopsSection" hidden>
+    <div class="section-head">
+      <h2>Minhas lojas</h2>
+      <button class="ghost" onclick="loadShops()">Atualizar</button>
+    </div>
+    <div id="shops" class="grid"></div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
