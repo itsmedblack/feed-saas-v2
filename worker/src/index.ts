@@ -5,7 +5,7 @@ import { detectPlatform } from './services/platformDetector';
 import { scanShop } from './services/scanner';
 import { ensureSchema } from './services/schema';
 
-const VERSION = '0.3.0';
+const VERSION = '0.3.1';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -70,6 +70,25 @@ export default {
         const shop = await env.DB.prepare('SELECT * FROM shops WHERE id=?').bind(shopDetail[1]).first();
         if (!shop) return json({error:'Loja não encontrada'},404);
         return json(shop);
+      }
+
+
+      if (request.method === 'PUT' && shopDetail) {
+        const current = await env.DB.prepare('SELECT * FROM shops WHERE id=?').bind(shopDetail[1]).first<any>();
+        if (!current) return json({error:'Loja não encontrada'},404);
+        const body:any = await request.json();
+        const name = String(body.name ?? current.name ?? '').trim() || new URL(current.domain).host;
+        const domain = body.url ? normalizeStoreUrl(body.url) : current.domain;
+        if (domain !== current.domain) {
+          const duplicate = await env.DB.prepare('SELECT id FROM shops WHERE domain=? AND id<>?').bind(domain, shopDetail[1]).first();
+          if (duplicate) return json({error:'Esta URL já está cadastrada em outra loja.'},409);
+        }
+        const platform = domain !== current.domain ? await detectPlatform(domain) : current.platform;
+        const inStockOnly = body.feedInStockOnly === false ? 0 : 1;
+        await env.DB.prepare(`UPDATE shops SET name=?, domain=?, platform=?, feed_in_stock_only=? WHERE id=?`)
+          .bind(name, domain, platform, inStockOnly, shopDetail[1]).run();
+        const updated = await env.DB.prepare('SELECT * FROM shops WHERE id=?').bind(shopDetail[1]).first();
+        return json({ok:true, shop:updated});
       }
 
       if (request.method === 'DELETE' && shopDetail) {

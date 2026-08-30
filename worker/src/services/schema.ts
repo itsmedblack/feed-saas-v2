@@ -14,6 +14,7 @@ const statements = [
     next_scan TEXT,
     feed_token TEXT NOT NULL UNIQUE,
     discovery_method TEXT,
+    feed_in_stock_only INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL
   )`,
   `CREATE TABLE IF NOT EXISTS products (
@@ -71,6 +72,8 @@ export async function ensureSchema(env: Env): Promise<void> {
     for (const sql of statements) {
       await env.DB.prepare(sql).run();
     }
+    // Migração automática para instalações V3 existentes.
+    try { await env.DB.prepare(`ALTER TABLE shops ADD COLUMN feed_in_stock_only INTEGER NOT NULL DEFAULT 1`).run(); } catch {}
     initialized = true;
   })();
 

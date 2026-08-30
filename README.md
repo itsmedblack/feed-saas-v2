@@ -1,3 +1,7 @@
+# Feed SaaS V3.1
+
+Atualização direta da V3. Acrescenta navegação para Painel, edição/exclusão de lojas e opção por loja para incluir no XML apenas produtos disponíveis. O padrão é **somente produtos disponíveis**.
+
 # Feed SaaS V3 — atualização direta
 
 Esta versão foi criada para atualizar o projeto V2 já publicado, preservando o mesmo Worker, D1, KV e frontend Netlify.

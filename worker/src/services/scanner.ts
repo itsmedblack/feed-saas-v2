@@ -25,7 +25,11 @@ export async function scanShop(env: Env, shop: any) {
       } catch { errors++; }
     }
 
-    const rows = await env.DB.prepare('SELECT * FROM products WHERE shop_id=? AND missing_count < 2').bind(shop.id).all();
+    const onlyAvailable = Number(shop.feed_in_stock_only ?? 1) === 1;
+    const feedSql = onlyAvailable
+      ? "SELECT * FROM products WHERE shop_id=? AND missing_count < 2 AND availability='in_stock'"
+      : 'SELECT * FROM products WHERE shop_id=? AND missing_count < 2';
+    const rows = await env.DB.prepare(feedSql).bind(shop.id).all();
     const xml = generateGoogleXml(shop.name || new URL(shop.domain).host, rows.results || []);
     await env.FEEDS.put(`feed:${shop.feed_token}`, xml, { metadata: { generatedAt: new Date().toISOString(), count: rows.results?.length || 0 } });
     const finished = new Date().toISOString();

@@ -146,6 +146,7 @@ async function activateTab(name){
   if(name==='health') await loadHealth();
   if(name==='history') await loadHistory();
   if(name==='schedule') setupScheduleFields();
+  if(name==='settings') setupShopSettings();
 }
 
 async function refreshCurrentTab(){
@@ -245,3 +246,50 @@ window.loadShops=loadShops;window.scanShop=scanShop;window.openShop=openShop;win
   try { await connectBackend(API_BASE); }
   catch (e) { showSetup(`A conexão salva não respondeu: ${e.message}`); }
 })();
+
+
+function setupShopSettings(){
+  if(!currentShop) return;
+  el('editShopName').value = currentShop.name || '';
+  el('editShopUrl').value = currentShop.domain || '';
+  el('feedInStockOnly').checked = Number(currentShop.feed_in_stock_only ?? 1) === 1;
+  el('editShopMsg').textContent = '';
+}
+
+el('saveShop').addEventListener('click', async () => {
+  if(!currentShop) return;
+  el('editShopMsg').textContent = 'Salvando...';
+  try {
+    const data = await request(`/api/shops/${currentShop.id}`, {
+      method:'PUT',
+      headers:{'content-type':'application/json'},
+      body:JSON.stringify({
+        name:el('editShopName').value,
+        url:el('editShopUrl').value,
+        feedInStockOnly:el('feedInStockOnly').checked
+      })
+    });
+    currentShop = data.shop;
+    el('modalShopName').textContent = currentShop.name || currentShop.domain;
+    el('modalShopDomain').textContent = currentShop.domain;
+    el('editShopMsg').textContent = 'Alterações salvas. Clique em “Atualizar agora” no painel para regenerar o XML imediatamente.';
+    await loadShops();
+  } catch(e){ el('editShopMsg').textContent = e.message; }
+});
+
+el('deleteShop').addEventListener('click', async () => {
+  if(!currentShop) return;
+  const label = currentShop.name || currentShop.domain;
+  if(!confirm(`Excluir ${label}? Esta ação removerá também os produtos, histórico e o XML.`)) return;
+  try {
+    await request(`/api/shops/${currentShop.id}`, {method:'DELETE'});
+    closeModal();
+    await loadShops();
+    el('msg').textContent = 'Loja excluída.';
+  } catch(e){ alert(e.message); }
+});
+
+el('goPanel').addEventListener('click', () => {
+  if(!el('shopModal').hidden) closeModal();
+  document.getElementById('panel').scrollIntoView({behavior:'smooth', block:'start'});
+});
