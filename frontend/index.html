@@ -10,9 +10,9 @@
 <main>
   <section class="hero">
     <div>
-      <span class="eyebrow">PRODUCT FEED ENGINE</span>
+      <span class="eyebrow">PRODUCT FEED ENGINE · V3</span>
       <h1>Transforme qualquer loja em um feed XML.</h1>
-      <p>Informe o endereço do e-commerce. A plataforma detecta a tecnologia, encontra os produtos e gera um XML público para catálogos.</p>
+      <p>Descubra produtos, monitore a qualidade do catálogo e mantenha o XML atualizado automaticamente.</p>
     </div>
   </section>
 
@@ -20,7 +20,7 @@
     <div>
       <span class="eyebrow">CONFIGURAÇÃO INICIAL</span>
       <h2>Conectar backend</h2>
-      <p class="muted">Cole abaixo a URL <strong>workers.dev</strong> exibida pela Cloudflare após o deploy.</p>
+      <p class="muted">Cole a URL <strong>workers.dev</strong> da Cloudflare.</p>
     </div>
     <div class="row">
       <input id="backendUrl" placeholder="https://feed-saas-v2.seu-subdominio.workers.dev">
@@ -47,12 +47,86 @@
 
   <section id="shopsSection" hidden>
     <div class="section-head">
-      <h2>Minhas lojas</h2>
+      <div><span class="eyebrow">OPERAÇÃO</span><h2>Minhas lojas</h2></div>
       <button class="ghost" onclick="loadShops()">Atualizar</button>
     </div>
     <div id="shops" class="grid"></div>
   </section>
 </main>
+
+<div class="modal" id="shopModal" hidden>
+  <div class="modal-shell">
+    <header class="modal-head">
+      <div>
+        <span class="eyebrow">LOJA</span>
+        <h2 id="modalShopName">Detalhes</h2>
+        <div class="meta" id="modalShopDomain"></div>
+      </div>
+      <button class="iconbtn" id="closeModal" aria-label="Fechar">×</button>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="products">Produtos</button>
+      <button class="tab" data-tab="health">Feed Health</button>
+      <button class="tab" data-tab="schedule">Agendamento</button>
+      <button class="tab" data-tab="history">Histórico</button>
+    </nav>
+
+    <section class="tabpane active" id="tab-products">
+      <div class="toolbar">
+        <input id="productSearch" placeholder="Buscar por nome, SKU ou ID">
+        <select id="productFilter">
+          <option value="all">Todos</option>
+          <option value="in_stock">Disponíveis</option>
+          <option value="out_of_stock">Indisponíveis</option>
+          <option value="missing_image">Sem imagem</option>
+          <option value="missing_price">Sem preço</option>
+          <option value="missing_gtin">Sem GTIN</option>
+          <option value="missing_brand">Sem marca</option>
+        </select>
+        <button id="refreshProducts" class="ghost">Atualizar</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Produto</th><th>SKU</th><th>Preço</th><th>Estoque</th><th>Categoria</th><th>Atualizado</th></tr></thead>
+          <tbody id="productsBody"></tbody>
+        </table>
+      </div>
+      <p class="meta" id="productsCount"></p>
+    </section>
+
+    <section class="tabpane" id="tab-health">
+      <div id="healthContent" class="health-layout"></div>
+    </section>
+
+    <section class="tabpane" id="tab-schedule">
+      <div class="settings-card">
+        <h3>Atualização automática</h3>
+        <p class="muted small">O Cron da Cloudflare verifica as lojas a cada hora. Horários configurados abaixo usam o horário de Brasília.</p>
+        <label>Frequência</label>
+        <select id="scheduleType">
+          <option value="manual">Manual</option>
+          <option value="hourly">A cada hora</option>
+          <option value="daily">Diário</option>
+          <option value="weekly">Semanal</option>
+          <option value="biweekly">Quinzenal</option>
+          <option value="monthly">Mensal</option>
+        </select>
+        <div id="scheduleHourWrap">
+          <label>Horário preferencial</label>
+          <select id="scheduleHour"></select>
+        </div>
+        <button id="saveSchedule">Salvar agendamento</button>
+        <p id="scheduleMsg"></p>
+      </div>
+    </section>
+
+    <section class="tabpane" id="tab-history">
+      <div id="historyContent"></div>
+    </section>
+  </div>
+</div>
+
 <script src="app.js"></script>
 </body>
 </html>
