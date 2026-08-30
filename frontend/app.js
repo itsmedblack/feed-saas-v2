@@ -257,7 +257,52 @@ function setupShopSettings(){
   el('defaultBrand').value = currentShop.default_brand || '';
   el('googleProductCategory').value = currentShop.google_product_category || '';
   el('editShopMsg').textContent = '';
+  loadCategorySettings();
 }
+
+
+async function loadCategorySettings(){
+  if(!currentShop) return;
+  const box = el('categoryList');
+  const help = el('categoryHelp');
+  box.innerHTML = '<div class="loading">Carregando categorias...</div>';
+  help.textContent = '';
+  let selected = [];
+  try {
+    const raw = currentShop.feed_categories;
+    selected = Array.isArray(raw) ? raw : JSON.parse(raw || '[]');
+    if(!Array.isArray(selected)) selected = [];
+  } catch { selected = []; }
+
+  try {
+    const categories = await request(`/api/shops/${currentShop.id}/categories`);
+    if(!categories.length){
+      box.innerHTML = '<div class="empty compact">Nenhuma categoria foi identificada ainda.</div>';
+      help.textContent = 'Execute “Atualizar agora” para o sistema analisar novamente os produtos e detectar categorias.';
+      return;
+    }
+    box.innerHTML = categories.map(c => {
+      const checked = selected.includes(String(c.slug)) ? 'checked' : '';
+      const label = c.label || c.slug;
+      return `<label class="category-option">
+        <input type="checkbox" value="${esc(c.slug)}" ${checked}>
+        <span><strong>${esc(label)}</strong><small>${esc(c.slug)} · ${Number(c.in_stock_count||0)} disponíveis de ${Number(c.product_count||0)}</small></span>
+      </label>`;
+    }).join('');
+    help.textContent = selected.length
+      ? `${selected.length} categoria(s) selecionada(s). O XML incluirá somente produtos dessas categorias.`
+      : 'Nenhuma selecionada: o XML incluirá todas as categorias.';
+  } catch(e) {
+    box.innerHTML = `<div class="empty compact">${esc(e.message)}</div>`;
+  }
+}
+
+el('selectAllCategories').addEventListener('click',()=>{
+  document.querySelectorAll('#categoryList input[type="checkbox"]').forEach(x=>x.checked=true);
+});
+el('clearCategories').addEventListener('click',()=>{
+  document.querySelectorAll('#categoryList input[type="checkbox"]').forEach(x=>x.checked=false);
+});
 
 el('saveShop').addEventListener('click', async () => {
   if(!currentShop) return;
@@ -272,13 +317,14 @@ el('saveShop').addEventListener('click', async () => {
         feedInStockOnly:el('feedInStockOnly').checked,
         merchantStoreName:el('merchantStoreName').value,
         defaultBrand:el('defaultBrand').value,
-        googleProductCategory:el('googleProductCategory').value
+        googleProductCategory:el('googleProductCategory').value,
+        feedCategories:[...document.querySelectorAll('#categoryList input[type="checkbox"]:checked')].map(x=>x.value)
       })
     });
     currentShop = data.shop;
     el('modalShopName').textContent = currentShop.name || currentShop.domain;
     el('modalShopDomain').textContent = currentShop.domain;
-    el('editShopMsg').textContent = 'Alterações salvas. Clique em “Atualizar agora” no painel para regenerar o XML imediatamente.';
+    el('editShopMsg').textContent = 'Alterações salvas. Clique em “Atualizar agora” no painel para regenerar o XML com os novos filtros.';
     await loadShops();
   } catch(e){ el('editShopMsg').textContent = e.message; }
 });

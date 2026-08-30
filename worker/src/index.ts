@@ -5,7 +5,7 @@ import { detectPlatform } from './services/platformDetector';
 import { scanShop } from './services/scanner';
 import { ensureSchema } from './services/schema';
 
-const VERSION = '0.3.2';
+const VERSION = '0.3.3';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -88,8 +88,13 @@ export default {
         const merchantStoreName = String(body.merchantStoreName ?? current.merchant_store_name ?? name).trim() || name;
         const defaultBrand = String(body.defaultBrand ?? current.default_brand ?? '').trim() || null;
         const googleProductCategory = String(body.googleProductCategory ?? current.google_product_category ?? '').trim() || null;
-        await env.DB.prepare(`UPDATE shops SET name=?, domain=?, platform=?, feed_in_stock_only=?, merchant_store_name=?, default_brand=?, google_product_category=? WHERE id=?`)
-          .bind(name, domain, platform, inStockOnly, merchantStoreName, defaultBrand, googleProductCategory, shopDetail[1]).run();
+        let feedCategories: string[] = [];
+        if (Array.isArray(body.feedCategories)) feedCategories = [...new Set(body.feedCategories.map((x:any)=>String(x).trim()).filter(Boolean))];
+        else {
+          try { const parsed = JSON.parse(String(current.feed_categories || '[]')); if (Array.isArray(parsed)) feedCategories = parsed; } catch {}
+        }
+        await env.DB.prepare(`UPDATE shops SET name=?, domain=?, platform=?, feed_in_stock_only=?, merchant_store_name=?, default_brand=?, google_product_category=?, feed_categories=? WHERE id=?`)
+          .bind(name, domain, platform, inStockOnly, merchantStoreName, defaultBrand, googleProductCategory, JSON.stringify(feedCategories), shopDetail[1]).run();
         const updated = await env.DB.prepare('SELECT * FROM shops WHERE id=?').bind(shopDetail[1]).first();
         return json({ok:true, shop:updated});
       }
@@ -109,6 +114,20 @@ export default {
         const shop = await env.DB.prepare('SELECT * FROM shops WHERE id=?').bind(scan[1]).first();
         if (!shop) return json({error:'Loja não encontrada'},404);
         return json(await scanShop(env, shop));
+      }
+
+      const categories = url.pathname.match(/^\/api\/shops\/([^/]+)\/categories$/);
+      if (request.method === 'GET' && categories) {
+        const rows = await env.DB.prepare(`SELECT
+          COALESCE(NULLIF(category_slug,''), LOWER(REPLACE(REPLACE(REPLACE(category,' ','-'),'_','-'),'--','-'))) AS slug,
+          COALESCE(NULLIF(category,''), category_slug) AS label,
+          COUNT(*) AS product_count,
+          SUM(CASE WHEN availability='in_stock' THEN 1 ELSE 0 END) AS in_stock_count
+          FROM products
+          WHERE shop_id=? AND ((category_slug IS NOT NULL AND category_slug!='') OR (category IS NOT NULL AND category!=''))
+          GROUP BY slug, label
+          ORDER BY label ASC`).bind(categories[1]).all();
+        return json((rows.results || []).filter((x:any)=>x.slug));
       }
 
       const products = url.pathname.match(/^\/api\/shops\/([^/]+)\/products$/);

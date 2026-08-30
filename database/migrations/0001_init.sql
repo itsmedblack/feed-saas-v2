@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS products (
   availability TEXT,
   brand TEXT,
   category TEXT,
+  category_slug TEXT,
   condition TEXT DEFAULT 'new',
   hash TEXT,
   missing_count INTEGER NOT NULL DEFAULT 0,

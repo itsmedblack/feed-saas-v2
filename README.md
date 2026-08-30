@@ -1,4 +1,4 @@
-# Feed SaaS V3.2
+# Feed SaaS V3.3
 
 Atualização direta da V3. Acrescenta navegação para Painel, edição/exclusão de lojas e opção por loja para incluir no XML apenas produtos disponíveis. O padrão é **somente produtos disponíveis**.
 
@@ -41,3 +41,16 @@ Aponte para o mesmo repositório/pasta `frontend`. O deploy automático atualiza
 - `g:google_product_category` pode ser configurado como categoria padrão da loja.
 - `g:additional_image_link` é emitido quando houver imagens adicionais armazenadas.
 - Não inventa marca automaticamente: o fallback só é utilizado quando configurado pelo usuário.
+
+
+## V3.3 — filtro de categorias por loja
+
+- Detecta categorias dos produtos durante a varredura e salva também um `category_slug`.
+- Em **Gerenciar → Editar loja → Google Merchant**, exibe as categorias identificadas com quantidade total e quantidade disponível.
+- Permite selecionar uma ou várias categorias para o XML.
+- Se nenhuma categoria for marcada, o comportamento permanece compatível: todas as categorias entram no feed.
+- Se houver categorias marcadas, somente produtos cujo `category_slug` esteja entre as selecionadas entram no XML.
+- Compatível com slugs como `cafe-torrado`, útil para lojas como a Unique Cafés.
+- Para instalações existentes, as novas colunas são criadas automaticamente pelo `ensureSchema`.
+- Após atualizar para esta versão, execute **Atualizar agora** uma vez em cada loja para popular os slugs das categorias antigas.
+- API: `0.3.3`.

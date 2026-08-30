@@ -20,6 +20,7 @@ export interface Product {
   availability: 'in_stock' | 'out_of_stock' | 'preorder' | 'backorder';
   brand?: string;
   category?: string;
+  categorySlug?: string;
   condition?: string;
   hash?: string;
 }

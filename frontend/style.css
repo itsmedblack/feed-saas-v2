@@ -8,3 +8,16 @@
 .merchant-fields h4{margin:0 0 6px;font-size:1rem}
 .merchant-fields label{display:block;margin-top:14px}
 .field-help{display:block;margin-top:6px;color:#7890aa;line-height:1.4}
+
+.category-picker{margin-top:20px;padding-top:18px;border-top:1px solid rgba(148,163,184,.18)}
+.category-picker-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:10px}
+.category-actions{display:flex;gap:10px;white-space:nowrap}
+.category-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px;margin:10px 0}
+.category-option{display:flex!important;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid rgba(148,163,184,.2);border-radius:12px;cursor:pointer;margin:0!important}
+.category-option:hover{border-color:rgba(148,163,184,.45)}
+.category-option input{width:auto!important;margin-top:3px}
+.category-option span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.category-option strong{font-size:14px}
+.category-option small{font-size:11px;opacity:.7;word-break:break-word}
+.empty.compact{padding:14px}
+@media(max-width:700px){.category-picker-head{flex-direction:column}.category-actions{white-space:normal}.category-list{grid-template-columns:1fr}}

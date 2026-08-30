@@ -26,10 +26,20 @@ export async function scanShop(env: Env, shop: any) {
     }
 
     const onlyAvailable = Number(shop.feed_in_stock_only ?? 1) === 1;
-    const feedSql = onlyAvailable
-      ? "SELECT * FROM products WHERE shop_id=? AND missing_count < 2 AND availability='in_stock'"
-      : 'SELECT * FROM products WHERE shop_id=? AND missing_count < 2';
-    const rows = await env.DB.prepare(feedSql).bind(shop.id).all();
+    let selectedCategories: string[] = [];
+    try {
+      const parsed = JSON.parse(String(shop.feed_categories || '[]'));
+      if (Array.isArray(parsed)) selectedCategories = parsed.map(String).filter(Boolean);
+    } catch {}
+
+    let feedSql = 'SELECT * FROM products WHERE shop_id=? AND missing_count < 2';
+    const feedBinds: any[] = [shop.id];
+    if (onlyAvailable) feedSql += " AND availability='in_stock'";
+    if (selectedCategories.length) {
+      feedSql += ` AND category_slug IN (${selectedCategories.map(()=>'?').join(',')})`;
+      feedBinds.push(...selectedCategories);
+    }
+    const rows = await env.DB.prepare(feedSql).bind(...feedBinds).all();
     const xml = generateGoogleXml({
       shopName: shop.name || new URL(shop.domain).host,
       storeName: shop.merchant_store_name || shop.name || new URL(shop.domain).host,
@@ -49,9 +59,9 @@ export async function scanShop(env: Env, shop: any) {
 
 async function upsertProduct(env: Env, shopId: string, id: string, p: Product) {
   const now = new Date().toISOString();
-  await env.DB.prepare(`INSERT INTO products(id,shop_id,external_id,sku,gtin,mpn,title,description,url,canonical_url,image_url,price,sale_price,currency,availability,brand,category,condition,updated_at,created_at)
-  VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-  ON CONFLICT(shop_id,canonical_url) DO UPDATE SET external_id=excluded.external_id,sku=excluded.sku,gtin=excluded.gtin,mpn=excluded.mpn,title=excluded.title,description=excluded.description,url=excluded.url,image_url=excluded.image_url,price=excluded.price,sale_price=excluded.sale_price,currency=excluded.currency,availability=excluded.availability,brand=excluded.brand,category=excluded.category,condition=excluded.condition,missing_count=0,updated_at=excluded.updated_at`).bind(
-    id,shopId,p.externalId||null,p.sku||null,p.gtin||null,p.mpn||null,p.title,p.description||null,p.url,p.canonicalUrl,p.imageUrl||null,p.price??null,p.salePrice??null,p.currency,p.availability,p.brand||null,p.category||null,p.condition||'new',now,now
+  await env.DB.prepare(`INSERT INTO products(id,shop_id,external_id,sku,gtin,mpn,title,description,url,canonical_url,image_url,price,sale_price,currency,availability,brand,category,category_slug,condition,updated_at,created_at)
+  VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+  ON CONFLICT(shop_id,canonical_url) DO UPDATE SET external_id=excluded.external_id,sku=excluded.sku,gtin=excluded.gtin,mpn=excluded.mpn,title=excluded.title,description=excluded.description,url=excluded.url,image_url=excluded.image_url,price=excluded.price,sale_price=excluded.sale_price,currency=excluded.currency,availability=excluded.availability,brand=excluded.brand,category=excluded.category,category_slug=excluded.category_slug,condition=excluded.condition,missing_count=0,updated_at=excluded.updated_at`).bind(
+    id,shopId,p.externalId||null,p.sku||null,p.gtin||null,p.mpn||null,p.title,p.description||null,p.url,p.canonicalUrl,p.imageUrl||null,p.price??null,p.salePrice??null,p.currency,p.availability,p.brand||null,p.category||null,p.categorySlug||null,p.condition||'new',now,now
   ).run();
 }

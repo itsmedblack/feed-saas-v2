@@ -18,6 +18,7 @@ const statements = [
     merchant_store_name TEXT,
     default_brand TEXT,
     google_product_category TEXT,
+    feed_categories TEXT,
     created_at TEXT NOT NULL
   )`,
   `CREATE TABLE IF NOT EXISTS products (
@@ -39,6 +40,7 @@ const statements = [
     availability TEXT,
     brand TEXT,
     category TEXT,
+    category_slug TEXT,
     condition TEXT DEFAULT 'new',
     hash TEXT,
     missing_count INTEGER NOT NULL DEFAULT 0,
@@ -80,6 +82,8 @@ export async function ensureSchema(env: Env): Promise<void> {
     try { await env.DB.prepare(`ALTER TABLE shops ADD COLUMN merchant_store_name TEXT`).run(); } catch {}
     try { await env.DB.prepare(`ALTER TABLE shops ADD COLUMN default_brand TEXT`).run(); } catch {}
     try { await env.DB.prepare(`ALTER TABLE shops ADD COLUMN google_product_category TEXT`).run(); } catch {}
+    try { await env.DB.prepare(`ALTER TABLE shops ADD COLUMN feed_categories TEXT`).run(); } catch {}
+    try { await env.DB.prepare(`ALTER TABLE products ADD COLUMN category_slug TEXT`).run(); } catch {}
     initialized = true;
   })();
 
