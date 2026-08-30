@@ -5,7 +5,7 @@ import { detectPlatform } from './services/platformDetector';
 import { scanShop } from './services/scanner';
 import { ensureSchema } from './services/schema';
 
-const VERSION = '0.3.3';
+const VERSION = '0.3.4';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {

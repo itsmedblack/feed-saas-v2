@@ -54,3 +54,18 @@ Aponte para o mesmo repositório/pasta `frontend`. O deploy automático atualiza
 - Para instalações existentes, as novas colunas são criadas automaticamente pelo `ensureSchema`.
 - Após atualizar para esta versão, execute **Atualizar agora** uma vez em cada loja para popular os slugs das categorias antigas.
 - API: `0.3.3`.
+
+
+## V3.4 — WooCommerce robusto
+
+Correção para lojas WooCommerce que são detectadas corretamente mas não expõem produtos de forma compatível com o sitemap usado pelo crawler.
+
+Nova prioridade para WooCommerce:
+1. WooCommerce Store API pública `/wp-json/wc/store/v1/products`
+2. Paginação automática de até 100 produtos por página
+3. Até 3.000 produtos por varredura nesta versão
+4. Captura de ID, SKU, título, descrição, preço, preço promocional, moeda, estoque, imagens, categoria e marca quando disponível
+5. Sitemap + JSON-LD/HTML continuam como fallback
+6. No histórico/método de descoberta, scans via API aparecem como `woocommerce-store-api`
+
+A Store API não exige Consumer Key/Secret e é destinada a dados públicos do catálogo.

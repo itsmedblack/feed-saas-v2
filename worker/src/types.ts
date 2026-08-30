@@ -14,6 +14,7 @@ export interface Product {
   url: string;
   canonicalUrl: string;
   imageUrl?: string;
+  additionalImages?: string[];
   price?: number;
   salePrice?: number;
   currency: string;
